@@ -375,21 +375,21 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
   $instance = (New-EC2Instance -ImageId $amazon_linux_ami_id -AvailabilityZone $aws_availability_zone -MinCount 1 -MaxCount 1 -InstanceType $worker_type_map."$target_worker_type".instance_type -KeyName $ec2_key_pair -SecurityGroup $ec2_security_groups).Instances[0]
   $instance_id = $instance.InstanceId
   Write-Host -object ('instance {0} created with ami {1}' -f $instance_id, $amazon_linux_ami_id) -ForegroundColor White
-  while ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -ne 'running') {
+  while ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -ne 'running') {
     Write-Host -object 'waiting for instance to start' -ForegroundColor DarkGray
     Start-Sleep -Seconds 5
   }
-  $device_zero = (Get-EC2Instance -InstanceId $instance_id).Instances[0].BlockDeviceMappings[0].DeviceName
-  Stop-EC2Instance -InstanceId $instance_id -ForceStop
-  while ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -ne 'stopped') {
+  $device_zero = (Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].BlockDeviceMappings[0].DeviceName
+  Stop-EC2Instance -InstanceId $instance_id -Region $aws_region
+  while ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -ne 'stopped') {
     Write-Host -object 'waiting for instance to stop' -ForegroundColor DarkGray
     Start-Sleep -Seconds 5
   }
 
   # detach and delete volumes and associated snapshots
-  foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id).Instances[0].BlockDeviceMappings) {
+  foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].BlockDeviceMappings) {
     try {
-      $detach_volume = (Dismount-EC2Volume -InstanceId $instance_id -Device $block_device_mapping.DeviceName -VolumeId $block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
+      $detach_volume = (Dismount-EC2Volume -InstanceId $instance_id -Region $aws_region -Device $block_device_mapping.DeviceName -VolumeId $block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
       Write-Host -object $detach_volume -ForegroundColor DarkGray
       Write-Host -object ('detached volume {0} from {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $instance_id, $block_device_mapping.DeviceName) -ForegroundColor White
     } catch {
@@ -400,16 +400,16 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
       Write-Host -object $_.Exception.Message -ForegroundColor Red
       exit
     }
-    while ((Get-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId).State -ne 'available') {
+    while ((Get-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -Region $aws_region).State -ne 'available') {
       Write-Host -object ('waiting for volume {0} to detach from {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $instance_id, $block_device_mapping.DeviceName) -ForegroundColor DarkGray
       Start-Sleep -Milliseconds 500
     }
-    Remove-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -PassThru -Force
+    Remove-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -Region $aws_region -PassThru -Force
   }
 
   # attach volume from vhd import (todo: handle attachment of multiple volumes)
   try {
-    $attach_volume = (Add-EC2Volume -InstanceId $instance_id -VolumeId $volume_zero -Device $device_zero -Force)
+    $attach_volume = (Add-EC2Volume -InstanceId $instance_id -Region $aws_region -VolumeId $volume_zero -Device $device_zero -Force)
     Write-Host -object $attach_volume -ForegroundColor DarkGray
     Write-Host -object ('attached volume {0} to {1}{2}' -f $volume_zero, $instance_id, $device_zero) -ForegroundColor White
   } catch {
@@ -424,10 +424,10 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
   # set DeleteOnTermination to true for all attached volumes
   try {
     $block_device_mapping_specifications = @()
-    foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id).Instances[0].BlockDeviceMappings) {
+    foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].BlockDeviceMappings) {
       $block_device_mapping_specifications += (New-Object Amazon.EC2.Model.InstanceBlockDeviceMappingSpecification -Property @{ DeviceName = $block_device_mapping.DeviceName; Ebs = New-Object Amazon.EC2.Model.EbsInstanceBlockDeviceSpecification -Property @{ DeleteOnTermination = $true; VolumeId = $block_device_mapping.Ebs.VolumeId } })
     }
-    Edit-EC2InstanceAttribute -InstanceId $instance_id -BlockDeviceMapping $block_device_mapping_specifications
+    Edit-EC2InstanceAttribute -InstanceId $instance_id -Region $aws_region -BlockDeviceMapping $block_device_mapping_specifications
     Write-Host -object 'DeleteOnTermination set to true for attached volumes' -ForegroundColor White
   } catch {
     Write-Host -object 'failed to set DeleteOnTermination for attached volumes' -ForegroundColor Red
@@ -438,7 +438,7 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
   }
 
   try {
-    Edit-EC2InstanceAttribute -InstanceId $instance_id -EnaSupport $true
+    Edit-EC2InstanceAttribute -InstanceId $instance_id -Region $aws_region -EnaSupport $true
     Write-Host -object ('enabled ena support attribute on instance {0}' -f $instance_id) -ForegroundColor DarkGray
   } catch {
     if ($_.Exception.InnerException) {
@@ -447,14 +447,14 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
     Write-Host -object $_.Exception.Message -ForegroundColor Red
   }
 
-  Start-EC2Instance -InstanceId $instance_id
+  Start-EC2Instance -InstanceId $instance_id -Region $aws_region
   $screenshot_folder_path = (Join-Path -Path $work_dir -ChildPath 'public\screenshot')
   New-Item -ItemType Directory -Force -Path $screenshot_folder_path
   $last_screenshot_time = ((Get-Date).AddSeconds(-60).ToUniversalTime())
   $last_screenshot_size = 0
-  $last_instance_state = ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name)
+  $last_instance_state = ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name)
   $stopwatch =  [System.Diagnostics.Stopwatch]::StartNew()
-  while (((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -ne 'stopped') -and ($stopwatch.Elapsed.TotalMinutes -lt 180)) {
+  while (((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -ne 'stopped') -and ($stopwatch.Elapsed.TotalMinutes -lt 180)) {
     if ($last_screenshot_size > 60kb) {
       $screenshot_frequency = 3
     } else {
@@ -464,7 +464,7 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
       try {
         $new_screenshot_time = ((Get-Date).ToUniversalTime())
         $screenshot_path = ('{0}\{1}-{2}.jpg' -f $screenshot_folder_path, $instance_id, $new_screenshot_time.ToString("yyyyMMddHHmmss"))
-        [io.file]::WriteAllBytes($screenshot_path, [convert]::FromBase64String((Get-EC2ConsoleScreenshot -InstanceId $instance_id -ErrorAction Stop).ImageData))
+        [io.file]::WriteAllBytes($screenshot_path, [convert]::FromBase64String((Get-EC2ConsoleScreenshot -InstanceId $instance_id -Region $aws_region -ErrorAction Stop).ImageData))
         $last_screenshot_time = $new_screenshot_time
         $last_screenshot_size = (Get-Item -Path $screenshot_path).length
         Write-Host -object ('{0:n1}kb screenshot saved to {1}' -f ($last_screenshot_size/1kb), (Resolve-Path -Path $screenshot_path).Path) -ForegroundColor DarkGray
@@ -477,27 +477,27 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
         Write-Host -object $_.Exception.Message -ForegroundColor Red
       }
     }
-    $new_instance_state = ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name)
+    $new_instance_state = ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name)
     if ($new_instance_state -ne $last_instance_state) {
       Write-Host -object ('instance {0} state change detected. previous state: {1}, current state: {2}' -f $instance_id, $last_instance_state, $new_instance_state) -ForegroundColor White
       $last_instance_state = $new_instance_state
     }
     Start-Sleep -Seconds 1
   }
-  if ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -eq 'running') {
+  if ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -eq 'running') {
     Write-Host -object ('instance failed to stop in {0:n1} minutes. forcing stop...' -f $stopwatch.Elapsed.TotalMinutes) -ForegroundColor Cyan
-    Stop-EC2Instance -InstanceId $instance_id -ForceStop
-    while ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -ne 'stopped') {
+    Stop-EC2Instance -InstanceId $instance_id -Region $aws_region
+    while ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -ne 'stopped') {
       Write-Host -object 'waiting for instance to stop' -ForegroundColor DarkCyan
       Start-Sleep -Seconds 5
     }
     $local_instance_id = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
     $local_devices = @([char[]]([char]'f'..[char]'z')|%{('xvd{0}' -f $_)})
     # detach previous debug volumes
-    foreach ($local_block_device_mapping in (Get-EC2Instance -InstanceId $local_instance_id).Instances[0].BlockDeviceMappings) {
+    foreach ($local_block_device_mapping in (Get-EC2Instance -InstanceId $local_instance_id -Region $aws_region).Instances[0].BlockDeviceMappings) {
       if ($local_devices.Contains($local_block_device_mapping.DeviceName)) {
         try {
-          $detach_volume = (Dismount-EC2Volume -InstanceId $local_instance_id -Device $local_block_device_mapping.DeviceName -VolumeId $local_block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
+          $detach_volume = (Dismount-EC2Volume -InstanceId $local_instance_id -Region $aws_region -Device $local_block_device_mapping.DeviceName -VolumeId $local_block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
           Write-Host -object $detach_volume -ForegroundColor DarkCyan
           Write-Host -object ('detached volume {0} from {1}{2}' -f $local_block_device_mapping.Ebs.VolumeId, $local_instance_id, $local_block_device_mapping.DeviceName) -ForegroundColor Cyan
         } catch {
@@ -508,16 +508,16 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
           Write-Host -object $_.Exception.Message -ForegroundColor Red
           exit
         }
-        while ((Get-EC2Volume -VolumeId $local_block_device_mapping.Ebs.VolumeId).State -ne 'available') {
+        while ((Get-EC2Volume -VolumeId $local_block_device_mapping.Ebs.VolumeId -Region $aws_region).State -ne 'available') {
           Write-Host -object ('waiting for volume {0} to detach from {1}{2}' -f $local_block_device_mapping.Ebs.VolumeId, $local_instance_id, $local_block_device_mapping.DeviceName) -ForegroundColor DarkCyan
           Start-Sleep -Milliseconds 500
         }
       }
     }
     $i = 0
-    foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id).Instances[0].BlockDeviceMappings) {
+    foreach ($block_device_mapping in (Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].BlockDeviceMappings) {
       try {
-        $detach_volume = (Dismount-EC2Volume -InstanceId $instance_id -Device $block_device_mapping.DeviceName -VolumeId $block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
+        $detach_volume = (Dismount-EC2Volume -InstanceId $instance_id -Region $aws_region -Device $block_device_mapping.DeviceName -VolumeId $block_device_mapping.Ebs.VolumeId -ForceDismount:$true)
         Write-Host -object $detach_volume -ForegroundColor DarkCyan
         Write-Host -object ('detached volume {0} from {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $instance_id, $block_device_mapping.DeviceName) -ForegroundColor Cyan
       } catch {
@@ -528,13 +528,13 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
         Write-Host -object $_.Exception.Message -ForegroundColor Red
         exit
       }
-      while ((Get-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId).State -ne 'available') {
+      while ((Get-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -Region $aws_region).State -ne 'available') {
         Write-Host -object ('waiting for volume {0} to detach from {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $instance_id, $block_device_mapping.DeviceName) -ForegroundColor DarkCyan
         Start-Sleep -Milliseconds 500
       }
       # attach volume to current instance for access to logs
       try {
-        $attach_volume = (Add-EC2Volume -InstanceId $local_instance_id -VolumeId $block_device_mapping.Ebs.VolumeId -Device $local_devices[$i] -Force)
+        $attach_volume = (Add-EC2Volume -InstanceId $local_instance_id -Region $aws_region -VolumeId $block_device_mapping.Ebs.VolumeId -Device $local_devices[$i] -Force)
         Write-Host -object $attach_volume -ForegroundColor DarkCyan
         Write-Host -object ('attached volume {0} to {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $local_instance_id, $local_devices[$i]) -ForegroundColor Cyan
       } catch {
@@ -547,16 +547,17 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
       }
       $i++
     }
-  } elseif ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -eq 'stopped') {
+  } elseif ((Get-EC2Instance -InstanceId $instance_id -Region $aws_region).Instances[0].State.Name -eq 'stopped') {
     try {
       $ami_id = (New-EC2Image `
         -InstanceId $instance_id `
+        -Region $aws_region `
         -Name ('{0}-{1}-{2}' -f [System.IO.Path]::GetFileNameWithoutExtension($config.vhd.key), $(if ($source_ref.Length -eq 40) { $source_ref.SubString(0, 7) } else { $source_ref }), $image_capture_date) `
         -Description $image_description)
       Write-Host -object ('ami {0} created from instance {1}' -f $ami_id, $instance_id) -ForegroundColor Green
       foreach ($shared_access_account in $shared_access_accounts) {
         try {
-          Edit-EC2ImageAttribute -ImageId $ami_id -Attribute 'launchPermission' -OperationType add -UserId $shared_access_account
+          Edit-EC2ImageAttribute -ImageId $ami_id -Region $aws_region -Attribute 'launchPermission' -OperationType add -UserId $shared_access_account
         } catch {
           Write-Host -object ('failed to share ami {0} with account {1}' -f $ami_id, $shared_access_account) -ForegroundColor Red
           if ($_.Exception.InnerException) {
