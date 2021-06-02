@@ -10,10 +10,10 @@ targets = [
     'taskId': slugid.nice(),
     'provider': 'ec2',
     'workerType': 'gecko-t-win10-64-alpha',
-    'workerPool': 'aws-provisioner-v1',
+    'workerPool': 'relops',
     'builder': {
-      'workerType': 'relops-image-builder',
-      'workerPool': 'aws-provisioner-v1'
+      'workerType': 'relops-3',
+      'workerPool': 'win2019'
     },
     'buildScript': 'build_ami.ps1',
     'name': 'iso-to-ec2-ami-win-10',
@@ -23,10 +23,10 @@ targets = [
     'taskId': slugid.nice(),
     'provider': 'ec2',
     'workerType': 'gecko-t-win10-64-gpu-a',
-    'workerPool': 'aws-provisioner-v1',
+    'workerPool': 'relops',
     'builder': {
-      'workerType': 'relops-image-builder',
-      'workerPool': 'aws-provisioner-v1'
+      'workerType': 'relops-3',
+      'workerPool': 'win2019'
     },
     'buildScript': 'build_ami.ps1',
     'name': 'iso-to-ec2-ami-win-10-gpu',
