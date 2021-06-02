@@ -221,7 +221,8 @@ for target in targets:
         ],
         'scopes': [
           'generic-worker:os-group:{}/{}/Administrators'.format(target['builder']['workerPool'], target['builder']['workerType']),
-          'generic-worker:run-as-administrator:{}/{}'.format(target['builder']['workerPool'], target['builder']['workerType'])
+          'generic-worker:run-as-administrator:{}/{}'.format(target['builder']['workerPool'], target['builder']['workerType']),
+          'secrets:get:project/relops/image-builder/dev'
         ],
         'payload': {
           'osGroups': [
