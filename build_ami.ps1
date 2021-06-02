@@ -82,6 +82,13 @@ if (-not (Get-Command 'Copy-S3Object' -ErrorAction 'SilentlyContinue')) {
 }
 
 $vhd_key = $(if ($source_ref.Length -eq 40) { ($config.vhd.key.Replace('vhd/', ('vhd/{0}/' -f $source_ref.SubString(0, 7)))) } else { $config.vhd.key })
+
+$secret = (Invoke-WebRequest -Uri 'http://taskcluster/secrets/v1/secret/project/relops/image-builder/dev' -UseBasicParsing | ConvertFrom-Json).secret;
+Set-AWSCredential `
+  -AccessKey $secret.amazon.id `
+  -SecretKey $secret.amazon.key `
+  -StoreAs 'default' | Out-Null;
+Write-Host -object ('checking bucket: {0}, for vhd: {1}...' -f $config.vhd.bucket, $vhd_key)
 if (-not (Get-S3Object -BucketName $config.vhd.bucket -Key $vhd_key -Region $aws_region)) {
 
   # download the iso file if not on the local filesystem
