@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 queue = taskcluster.Queue({'rootUrl': os.getenv('TASKCLUSTER_PROXY_URL', os.getenv('TASKCLUSTER_ROOT_URL'))})
 targets = [
   {
-    'taskId': slugid.nice().decode('utf-8'),
+    'taskId': slugid.nice(),
     'provider': 'ec2',
     'workerType': 'gecko-t-win10-64-alpha',
     'workerPool': 'aws-provisioner-v1',
@@ -20,7 +20,7 @@ targets = [
     'decription': 'build windows 10 amazon ec2 ami from iso'
   },
   {
-    'taskId': slugid.nice().decode('utf-8'),
+    'taskId': slugid.nice(),
     'provider': 'ec2',
     'workerType': 'gecko-t-win10-64-gpu-a',
     'workerPool': 'aws-provisioner-v1',
