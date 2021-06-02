@@ -409,7 +409,7 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
       Write-Host -object ('waiting for volume {0} to detach from {1}{2}' -f $block_device_mapping.Ebs.VolumeId, $instance_id, $block_device_mapping.DeviceName) -ForegroundColor DarkGray
       Start-Sleep -Milliseconds 500
     }
-    Remove-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -Region $aws_region -PassThru -Force
+    Remove-EC2Volume -VolumeId $block_device_mapping.Ebs.VolumeId -Region $aws_region -Force
   }
 
   # attach volume from vhd import (todo: handle attachment of multiple volumes)
