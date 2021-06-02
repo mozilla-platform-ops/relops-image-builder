@@ -12,8 +12,8 @@ targets = [
     'workerType': 'gecko-t-win10-64-alpha',
     'workerPool': 'relops',
     'builder': {
-      'workerType': 'relops-3',
-      'workerPool': 'win2019'
+      'workerType': 'win2019',
+      'workerPool': 'relops-3'
     },
     'buildScript': 'build_ami.ps1',
     'name': 'iso-to-ec2-ami-win-10',
@@ -25,8 +25,8 @@ targets = [
     'workerType': 'gecko-t-win10-64-gpu-a',
     'workerPool': 'relops',
     'builder': {
-      'workerType': 'relops-3',
-      'workerPool': 'win2019'
+      'workerType': 'win2019',
+      'workerPool': 'relops-3'
     },
     'buildScript': 'build_ami.ps1',
     'name': 'iso-to-ec2-ami-win-10-gpu',
