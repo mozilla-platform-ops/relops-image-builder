@@ -208,7 +208,7 @@ for target in targets:
     and x['architecture'] == wtMap[target['workerType']]['architecture'])), None)
 
   if manifestItem is not None:
-    if (target['provider'] == 'ec2' and 'unattend/{}'.format(os.path.basename(manifestItem['unattend'])) in changedFiles) or (target['provider'] == 'gcp' and 'unattend/gcp/{}'.format(os.path.basename(manifestItem['unattend'])) in changedFiles):
+    if (target['provider'] == 'ec2' and ((os.environ.get('build_ec2') == 'true') or 'unattend/{}'.format(os.path.basename(manifestItem['unattend'])) in changedFiles)) or (target['provider'] == 'gcp' and 'unattend/gcp/{}'.format(os.path.basename(manifestItem['unattend'])) in changedFiles):
       payload = {
         'created': '{}Z'.format(datetime.utcnow().isoformat()[:-3]),
         'deadline': '{}Z'.format((datetime.utcnow() + timedelta(days=3)).isoformat()[:-3]),
