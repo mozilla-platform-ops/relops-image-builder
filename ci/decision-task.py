@@ -5,6 +5,7 @@ import taskcluster
 from datetime import datetime, timedelta
 
 queue = taskcluster.Queue({'rootUrl': os.getenv('TASKCLUSTER_PROXY_URL', os.getenv('TASKCLUSTER_ROOT_URL'))})
+scheduler = 'taskcluster-ui' if len(os.environ.get('GITHUB_HEAD_SHA')) == 12 else 'taskcluster-github'
 targets = [
   {
     'taskId': slugid.nice(),
@@ -214,7 +215,7 @@ for target in targets:
         'deadline': '{}Z'.format((datetime.utcnow() + timedelta(days=3)).isoformat()[:-3]),
         'provisionerId': target['builder']['workerPool'],
         'workerType': target['builder']['workerType'],
-        'schedulerId': 'taskcluster-github',
+        'schedulerId': scheduler,
         'taskGroupId': os.environ.get('TASK_ID'),
         'routes': [
           'index.project.releng.relops-image-builder.v1.revision.{}'.format(os.environ.get('GITHUB_HEAD_SHA'))
