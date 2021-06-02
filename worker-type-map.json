@@ -4,11 +4,11 @@
     "ami_description": "Amazon Linux 2 AMI * HVM gp2",
     "language": "en-US",
     "edition": "Professional",
-    "version": 1903,
+    "version": 2004,
     "build": {
       "major": 10,
-      "release": 18362,
-      "build": 356
+      "release": 19041,
+      "build": 985
     },
     "architecture": "x64"
   },
@@ -17,11 +17,11 @@
     "ami_description": "Amazon Linux 2 AMI * HVM gp2",
     "language": "en-US",
     "edition": "Professional",
-    "version": 1903,
+    "version": 2004,
     "build": {
       "major": 10,
-      "release": 18362,
-      "build": 356
+      "release": 19041,
+      "build": 985
     },
     "architecture": "x64"
   },

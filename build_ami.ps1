@@ -542,7 +542,10 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
     }
   } elseif ((Get-EC2Instance -InstanceId $instance_id).Instances[0].State.Name -eq 'stopped') {
     try {
-      $ami_id = (New-EC2Image -InstanceId $instance_id -Name ('{0}-{1}-{2}' -f [System.IO.Path]::GetFileNameWithoutExtension($config.vhd.key), $(if ($source_ref.Length -eq 40) { $source_ref.SubString(0, 7) } else { $source_ref }), $image_capture_date) -Description $image_description)
+      $ami_id = (New-EC2Image `
+        -InstanceId $instance_id `
+        -Name ('{0}-{1}-{2}' -f [System.IO.Path]::GetFileNameWithoutExtension($config.vhd.key), $(if ($source_ref.Length -eq 40) { $source_ref.SubString(0, 7) } else { $source_ref }), $image_capture_date) `
+        -Description $image_description)
       Write-Host -object ('ami {0} created from instance {1}' -f $ami_id, $instance_id) -ForegroundColor Green
       foreach ($shared_access_account in $shared_access_accounts) {
         try {

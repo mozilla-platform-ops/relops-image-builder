@@ -31,7 +31,7 @@ targets = [
     'buildScript': 'build_ami.ps1',
     'name': 'iso-to-ec2-ami-win-10-gpu',
     'decription': 'build windows 10 gpu amazon ec2 ami from iso'
-  },
+  }
 #  {
 #    'taskId': slugid.nice().decode('utf-8'),
 #    'provider': 'ec2',
@@ -58,71 +58,71 @@ targets = [
 #    'name': 'iso-to-ec2-ami-win-7-gpu',
 #    'decription': 'build windows 7 gpu amazon ec2 ami from iso'
 #  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'ec2',
-    'workerType': 'gecko-1-b-win2012-alpha',
-    'workerPool': 'aws-provisioner-v1',
-    'builder': {
-      'workerType': 'relops-image-builder',
-      'workerPool': 'aws-provisioner-v1'
-    },
-    'buildScript': 'build_ami.ps1',
-    'name': 'iso-to-ec2-ami-win-2012',
-    'decription': 'build windows server 2012 amazon ec2 ami from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'ec2',
-    'workerType': 'gecko-1-b-win2016-alpha',
-    'workerPool': 'aws-provisioner-v1',
-    'builder': {
-      'workerType': 'relops-image-builder',
-      'workerPool': 'aws-provisioner-v1'
-    },
-    'buildScript': 'build_ami.ps1',
-    'name': 'iso-to-ec2-ami-win-2016',
-    'decription': 'build windows server 2016 amazon ec2 ami from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'ec2',
-    'workerType': 'gecko-1-b-win2019-alpha',
-    'workerPool': 'aws-provisioner-v1',
-    'builder': {
-      'workerType': 'relops-image-builder',
-      'workerPool': 'aws-provisioner-v1'
-    },
-    'buildScript': 'build_ami.ps1',
-    'name': 'iso-to-ec2-ami-win-2019',
-    'decription': 'build windows server 2019 amazon ec2 ami from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'gcp',
-    'workerType': 'gecko-t-win10-64-gamma',
-    'workerPool': 'gcp',
-    'builder': {
-      'workerType': 'win2016-gamma',
-      'workerPool': 'sandbox-1'
-    },
-    'buildScript': 'build_vhd.ps1',
-    'name': 'iso-to-gcp-img-win-10',
-    'decription': 'build windows 10 google cloud image from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'gcp',
-    'workerType': 'gecko-t-win10-64-gpu-gamma',
-    'workerPool': 'gcp',
-    'builder': {
-      'workerType': 'win2016-gamma',
-      'workerPool': 'sandbox-1'
-    },
-    'buildScript': 'build_vhd.ps1',
-    'name': 'iso-to-gcp-img-win-10-gpu',
-    'decription': 'build windows 10 gpu google cloud image from iso'
-  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'ec2',
+#    'workerType': 'gecko-1-b-win2012-alpha',
+#    'workerPool': 'aws-provisioner-v1',
+#    'builder': {
+#      'workerType': 'relops-image-builder',
+#      'workerPool': 'aws-provisioner-v1'
+#    },
+#    'buildScript': 'build_ami.ps1',
+#    'name': 'iso-to-ec2-ami-win-2012',
+#    'decription': 'build windows server 2012 amazon ec2 ami from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'ec2',
+#    'workerType': 'gecko-1-b-win2016-alpha',
+#    'workerPool': 'aws-provisioner-v1',
+#    'builder': {
+#      'workerType': 'relops-image-builder',
+#      'workerPool': 'aws-provisioner-v1'
+#    },
+#    'buildScript': 'build_ami.ps1',
+#    'name': 'iso-to-ec2-ami-win-2016',
+#    'decription': 'build windows server 2016 amazon ec2 ami from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'ec2',
+#    'workerType': 'gecko-1-b-win2019-alpha',
+#    'workerPool': 'aws-provisioner-v1',
+#    'builder': {
+#      'workerType': 'relops-image-builder',
+#      'workerPool': 'aws-provisioner-v1'
+#    },
+#    'buildScript': 'build_ami.ps1',
+#    'name': 'iso-to-ec2-ami-win-2019',
+#    'decription': 'build windows server 2019 amazon ec2 ami from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'gcp',
+#    'workerType': 'gecko-t-win10-64-gamma',
+#    'workerPool': 'gcp',
+#    'builder': {
+#      'workerType': 'win2016-gamma',
+#      'workerPool': 'sandbox-1'
+#    },
+#    'buildScript': 'build_vhd.ps1',
+#    'name': 'iso-to-gcp-img-win-10',
+#    'decription': 'build windows 10 google cloud image from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'gcp',
+#    'workerType': 'gecko-t-win10-64-gpu-gamma',
+#    'workerPool': 'gcp',
+#    'builder': {
+#      'workerType': 'win2016-gamma',
+#      'workerPool': 'sandbox-1'
+#    },
+#    'buildScript': 'build_vhd.ps1',
+#    'name': 'iso-to-gcp-img-win-10-gpu',
+#    'decription': 'build windows 10 gpu google cloud image from iso'
+#  },
 #  {
 #    'taskId': slugid.nice().decode('utf-8'),
 #    'provider': 'gcp',
@@ -149,45 +149,45 @@ targets = [
 #    'name': 'iso-to-gcp-img-win-7-gpu',
 #    'decription': 'build windows 7 gpu google cloud image from iso'
 #  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'gcp',
-    'workerType': 'gecko-1-b-win2012-gamma',
-    'workerPool': 'gcp',
-    'builder': {
-      'workerType': 'win2016-gamma',
-      'workerPool': 'sandbox-1'
-    },
-    'buildScript': 'build_vhd.ps1',
-    'name': 'iso-to-gcp-img-win-2012',
-    'decription': 'build windows server 2012 google cloud image from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'gcp',
-    'workerType': 'gecko-1-b-win2016-gamma',
-    'workerPool': 'gcp',
-    'builder': {
-      'workerType': 'win2016-gamma',
-      'workerPool': 'sandbox-1'
-    },
-    'buildScript': 'build_vhd.ps1',
-    'name': 'iso-to-gcp-img-win-2016',
-    'decription': 'build windows server 2016 google cloud image from iso'
-  },
-  {
-    'taskId': slugid.nice().decode('utf-8'),
-    'provider': 'gcp',
-    'workerType': 'gecko-1-b-win2019-gamma',
-    'workerPool': 'gcp',
-    'builder': {
-      'workerType': 'win2016-gamma',
-      'workerPool': 'sandbox-1'
-    },
-    'buildScript': 'build_vhd.ps1',
-    'name': 'iso-to-gcp-img-win-2019',
-    'decription': 'build windows server 2019 google cloud image from iso'
-  }
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'gcp',
+#    'workerType': 'gecko-1-b-win2012-gamma',
+#    'workerPool': 'gcp',
+#    'builder': {
+#      'workerType': 'win2016-gamma',
+#      'workerPool': 'sandbox-1'
+#    },
+#    'buildScript': 'build_vhd.ps1',
+#    'name': 'iso-to-gcp-img-win-2012',
+#    'decription': 'build windows server 2012 google cloud image from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'gcp',
+#    'workerType': 'gecko-1-b-win2016-gamma',
+#    'workerPool': 'gcp',
+#    'builder': {
+#      'workerType': 'win2016-gamma',
+#      'workerPool': 'sandbox-1'
+#    },
+#    'buildScript': 'build_vhd.ps1',
+#    'name': 'iso-to-gcp-img-win-2016',
+#    'decription': 'build windows server 2016 google cloud image from iso'
+#  },
+#  {
+#    'taskId': slugid.nice().decode('utf-8'),
+#    'provider': 'gcp',
+#    'workerType': 'gecko-1-b-win2019-gamma',
+#    'workerPool': 'gcp',
+#    'builder': {
+#      'workerType': 'win2016-gamma',
+#      'workerPool': 'sandbox-1'
+#    },
+#    'buildScript': 'build_vhd.ps1',
+#    'name': 'iso-to-gcp-img-win-2019',
+#    'decription': 'build windows server 2019 google cloud image from iso'
+#  }
 ]
 changedFiles = os.environ.get('git_changed_files').split('\n')
 print(changedFiles)
