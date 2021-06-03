@@ -344,18 +344,18 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
   Write-Host -object ('snapshot import complete. snapshot id: {0}, status: {1}; {2}' -f $import_task_status.SnapshotTaskDetail.SnapshotId, $import_task_status.SnapshotTaskDetail.Status, $import_task_status.SnapshotTaskDetail.StatusMessage) -ForegroundColor White
   Write-Host -object ($import_task_status.SnapshotTaskDetail | Format-List | Out-String) -ForegroundColor DarkGray
 
-  $snapshots = @(Get-EC2Snapshot -Filter (New-Object -TypeName Amazon.EC2.Model.Filter -ArgumentList @('description', @(('Created by AWS-VMImport service for {0}' -f $import_task_status.ImportTaskId)))))
+  $snapshots = @(Get-EC2Snapshot -Region $aws_region -Filter (New-Object -TypeName Amazon.EC2.Model.Filter -ArgumentList @('description', @(('Created by AWS-VMImport service for {0}' -f $import_task_status.ImportTaskId)))))
   Write-Host -object ('{0} snapshot{1} extracted from {2}' -f $snapshots.length, $(if ($snapshots.length -gt 1) { 's' } else { '' }), $config.format) -ForegroundColor White
   Write-Host -object ($snapshots | Format-Table | Out-String) -ForegroundColor DarkGray
 
   # create an ec2 volume for each snapshot
   $volumes = @()
   foreach ($snapshot in $snapshots) {
-    $snapshot = (Get-EC2Snapshot -SnapshotId $snapshot.SnapshotId)
+    $snapshot = (Get-EC2Snapshot -SnapshotId $snapshot.SnapshotId -Region $aws_region)
     while ($snapshot.State -ne 'completed') {
       Write-Host -object 'waiting for snapshot availability' -ForegroundColor DarkGray
       Start-Sleep -Seconds 1
-      $snapshot = (Get-EC2Snapshot -SnapshotId $snapshot.SnapshotId)
+      $snapshot = (Get-EC2Snapshot -SnapshotId $snapshot.SnapshotId -Region $aws_region)
     }
     Write-Host -object ('snapshot id: {0}, state: {1}, progress: {2}, size: {3}gb' -f $snapshot.SnapshotId, $snapshot.State, $snapshot.Progress, $snapshot.VolumeSize) -ForegroundColor White
     $volume = (New-EC2Volume -SnapshotId $snapshot.SnapshotId -Size $snapshot.VolumeSize -AvailabilityZone $aws_availability_zone -VolumeType 'gp2' -Encrypted $false)
@@ -364,7 +364,7 @@ if ($import_task_status.SnapshotTaskDetail.Status -ne 'completed') {
     # wait for volume creation to complete
     while ($volume.State -ne 'available') {
       $last_volume_state = $volume.State
-      $volume = (Get-EC2Volume -VolumeId $volume.VolumeId)
+      $volume = (Get-EC2Volume -VolumeId $volume.VolumeId -Region $aws_region)
       if ($last_volume_state -ne $volume.State) {
         Write-Host -object ('volume creation in progress. volume id: {0}, state: {1}' -f $volume.VolumeId, $volume.State) -ForegroundColor White
       }
